@@ -18,6 +18,8 @@ global=""
 model="host"
 extrargs=""
 machine="pc"
+spawn=""
+numainfo=""
 #monitor="-monitor unix:/tmp/qemu.monitor5,server,nowait"
 
 while [ $# -gt 0 ]; do
@@ -47,10 +49,6 @@ while [ $# -gt 0 ]; do
         net="-net nic,model=e1000"
         shift 1
         ;;    
-    --numa)
-        numarg=" -numa node,nodeid=0,cpus=2 -numa node,nodeid=1,cpus=2"
-        shift 1
-        ;;
     --lsi)
         extra="-device lsi"
         shift 1
@@ -161,12 +159,28 @@ while [ $# -gt 0 ]; do
         extrargs=$extrargs$2
         shift 2
     	;;
+    --diskbus)
+        diskbus=$2
+        shift 2
+    	;;
+    --L)
+        extrargs=$extrargs"-L "$2
+        shift 2
+        ;;    
+    --numactl)
+        spawn="numactl $2 -l"
+        shift 2
+        ;;    
+    --numa)
+        numainfo=$numainfo" -numa $2"
+        shift 2
+        ;;    
     esac
 done
 
 net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
 
-$kvm -bios $seabios -enable-kvm  \
+$spawn $kvm -bios $seabios -enable-kvm  \
 -M $machine -smp $cpus,maxcpus=64 \
 -cpu $model \
 -m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=raw \
@@ -182,9 +196,11 @@ $vnc \
 $global \
 $monitor $monseabios $incoming\
 $qmp \
-$extrargs
+$extrargs \
+$numainfo
 
 #-device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x8
 #-monitor stdio \
 
 #id=p$4m0,size=$4M 
+
