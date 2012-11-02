@@ -20,6 +20,8 @@ extrargs=""
 machine="pc"
 spawn=""
 numainfo=""
+devices=""
+plegap=""
 #monitor="-monitor unix:/tmp/qemu.monitor5,server,nowait"
 
 while [ $# -gt 0 ]; do
@@ -44,6 +46,10 @@ while [ $# -gt 0 ]; do
     --dimmpop)
         dimmpop=",populated=on"
         shift 1
+        ;;
+    --device)
+        devices=$devices" -device $2"
+        shift 2
         ;;
     --e1000)
         net="-net nic,model=e1000"
@@ -156,7 +162,7 @@ while [ $# -gt 0 ]; do
         shift 2
     	;;
     --extra)
-        extrargs=$extrargs$2
+        extrargs=$extrargs" "$2
         shift 2
     	;;
     --diskbus)
@@ -173,6 +179,10 @@ while [ $# -gt 0 ]; do
         ;;    
     --numa)
         numainfo=$numainfo" -numa $2"
+        shift 2
+        ;;    
+    --plegap)
+        plegap="-ple-gap $2"
         shift 2
         ;;    
     esac
@@ -197,7 +207,9 @@ $global \
 $monitor $monseabios $incoming\
 $qmp \
 $extrargs \
-$numainfo
+$numainfo \
+$devices \
+$plegap
 
 #-device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x8
 #-monitor stdio \
