@@ -17,22 +17,28 @@ vga="-vga std"
 global=""
 model="host"
 extrargs=""
+extracontrollers=""
 machine="pc"
 spawn=""
 numainfo=""
 devices=""
 plegap=""
+maxcpus=64
 #monitor="-monitor unix:/tmp/qemu.monitor5,server,nowait"
 
 while [ $# -gt 0 ]; do
     case $1 in
     --dimmid)
-        dimmid="id=$2,"
+        dimmid="id=$2"
+        shift 2
+        ;;
+    --dimmnode)
+        dimmnode=",node=$2"
         shift 2
         ;;
     --dimmsize)
-        dimmsize="size=$2"
-        dimms=$dimms" "$dimmarg$dimmid$dimmsize$dimmpop" "
+        dimmsize=",size=$2"
+        dimms=$dimms" "$dimmarg$dimmid$dimmsize$dimmnode$dimmpop" "
         shift 2
         ;;
     --dimmarg)
@@ -40,7 +46,7 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --dimmdev)
-        dimmarg=" -device dimm,"
+        dimmarg=" -device dimm"
         shift 1
         ;;
     --dimmpop)
@@ -61,6 +67,14 @@ while [ $# -gt 0 ]; do
         ;;
     --scsi)
         diskdriver="scsi-disk"
+        shift 1
+        ;;
+    --usb)
+        extracontrollers=$extracontrollers" -device piix3-usb-uhci"
+        shift 1
+        ;;
+    --ahci)
+        extracontrollers=$extracontrollers" -device ahci,id=ahci.0,bus=pci.0"
         shift 1
         ;;
     --root)
@@ -185,14 +199,19 @@ while [ $# -gt 0 ]; do
         plegap="-ple-gap $2"
         shift 2
         ;;    
+    --maxcpus)
+        maxcpus=$2
+        shift 2
+        ;;
     esac
 done
 
 net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
 
 $spawn $kvm -bios $seabios -enable-kvm  \
--M $machine -smp $cpus,maxcpus=64 \
+-M $machine -smp $cpus,maxcpus=$maxcpus \
 -cpu $model \
+$extracontrollers \
 -m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=raw \
 -device $diskdriver,bus=$diskbus.0,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1 \
 $vga \
