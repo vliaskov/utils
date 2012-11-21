@@ -25,9 +25,14 @@ devices=""
 plegap=""
 maxcpus=64
 #monitor="-monitor unix:/tmp/qemu.monitor5,server,nowait"
+usbcontrollers=0
 
 while [ $# -gt 0 ]; do
     case $1 in
+    --nodefaults)
+        extrargs=$extrargs" -nodefaults -nodefconfig"
+        shift 1
+        ;;
     --dimmid)
         dimmid="id=$2"
         shift 2
@@ -69,8 +74,25 @@ while [ $# -gt 0 ]; do
         diskdriver="scsi-disk"
         shift 1
         ;;
-    --usb)
-        extracontrollers=$extracontrollers" -device piix3-usb-uhci"
+    --usb-piix4)
+        extracontrollers=$extracontrollers" -device piix4-usb-uhci,id=usb$usbcontrollers"
+        let usbcontrollers++
+        shift 1
+        ;;
+    --usb-piix3)
+        #extracontrollers=$extracontrollers" -usb"
+        extracontrollers=$extracontrollers" -device piix3-usb-uhci,id=usb$usbcontrollers"
+        #extracontrollers=$extracontrollers" -device piix3-usb-uhci"
+        let usbcontrollers++
+        shift 1
+        ;;
+    --usb-ehci)
+        extracontrollers=$extracontrollers" -device usb-ehci,id=usb$usbcontrollers"
+        let usbcontrollers++
+        shift 1
+        ;;
+    --usbtablet)
+        extrargs=$extrargs" -device usb-tablet,id=input0"
         shift 1
         ;;
     --ahci)
@@ -104,11 +126,27 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --imagextra)    
-        imagextra="-drive file=$2,if=none,id=isoextra,format=raw"
+        imagextra="-drive file=$2,if=none,id=isoextra,format=raw" #media=cdrom
         shift 2
         ;;
-    --cdromextra)
-        imagextra=$imagextra" -device ide-cd,drive=isoextra"
+    --imagextradummy)    
+        imagextra="-drive if=none,id=isoextra,format=raw"
+        shift 1
+        ;;
+    --cdromideextra)
+        imagextra=$imagextra" -device ide-drive,drive=isoextra,id=ide1-cd1"
+        shift 1
+        ;;
+    --cdromideextraempty)
+        imagextra=$imagextra" -device ide-cd"
+        shift 1
+        ;;
+    --cdromscsiextra)
+        imagextra=$imagextra" -device scsi-cd,drive=isoextra"
+        shift 1
+        ;;
+    --cdromscsiextraempty)
+        imagextra=$imagextra" -device scsi-cd"
         shift 1
         ;;
     --bios)
