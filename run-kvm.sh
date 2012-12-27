@@ -17,22 +17,33 @@ vga="-vga std"
 global=""
 model="host"
 extrargs=""
+extracontrollers=""
 machine="pc"
 spawn=""
 numainfo=""
 devices=""
 plegap=""
+maxcpus=64
 #monitor="-monitor unix:/tmp/qemu.monitor5,server,nowait"
+usbcontrollers=0
 
 while [ $# -gt 0 ]; do
     case $1 in
+    --nodefaults)
+        extrargs=$extrargs" -nodefaults -nodefconfig"
+        shift 1
+        ;;
     --dimmid)
-        dimmid="id=$2,"
+        dimmid="id=$2"
+        shift 2
+        ;;
+    --dimmnode)
+        dimmnode=",node=$2"
         shift 2
         ;;
     --dimmsize)
-        dimmsize="size=$2"
-        dimms=$dimms" "$dimmarg$dimmid$dimmsize$dimmpop" "
+        dimmsize=",size=$2"
+        dimms=$dimms" "$dimmarg$dimmid$dimmsize$dimmnode$dimmpop" "
         shift 2
         ;;
     --dimmarg)
@@ -40,7 +51,7 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --dimmdev)
-        dimmarg=" -device dimm,"
+        dimmarg=" -device dimm"
         shift 1
         ;;
     --dimmpop)
@@ -61,6 +72,31 @@ while [ $# -gt 0 ]; do
         ;;
     --scsi)
         diskdriver="scsi-disk"
+        shift 1
+        ;;
+    --usb-piix4)
+        extracontrollers=$extracontrollers" -device piix4-usb-uhci,id=usb$usbcontrollers"
+        let usbcontrollers++
+        shift 1
+        ;;
+    --usb-piix3)
+        #extracontrollers=$extracontrollers" -usb"
+        extracontrollers=$extracontrollers" -device piix3-usb-uhci,id=usb$usbcontrollers"
+        #extracontrollers=$extracontrollers" -device piix3-usb-uhci"
+        let usbcontrollers++
+        shift 1
+        ;;
+    --usb-ehci)
+        extracontrollers=$extracontrollers" -device usb-ehci,id=usb$usbcontrollers"
+        let usbcontrollers++
+        shift 1
+        ;;
+    --usbtablet)
+        extrargs=$extrargs" -device usb-tablet,id=input0"
+        shift 1
+        ;;
+    --ahci)
+        extracontrollers=$extracontrollers" -device ahci,id=ahci.0,bus=pci.0"
         shift 1
         ;;
     --root)
@@ -90,11 +126,27 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --imagextra)    
-        imagextra="-drive file=$2,if=none,id=isoextra,format=raw"
+        imagextra="-drive file=$2,if=none,id=isoextra,format=raw" #media=cdrom
         shift 2
         ;;
-    --cdromextra)
-        imagextra=$imagextra" -device ide-cd,drive=isoextra"
+    --imagextradummy)    
+        imagextra="-drive if=none,id=isoextra,format=raw"
+        shift 1
+        ;;
+    --cdromideextra)
+        imagextra=$imagextra" -device ide-drive,drive=isoextra,id=ide1-cd1"
+        shift 1
+        ;;
+    --cdromideextraempty)
+        imagextra=$imagextra" -device ide-cd"
+        shift 1
+        ;;
+    --cdromscsiextra)
+        imagextra=$imagextra" -device scsi-cd,drive=isoextra"
+        shift 1
+        ;;
+    --cdromscsiextraempty)
+        imagextra=$imagextra" -device scsi-cd"
         shift 1
         ;;
     --bios)
@@ -185,14 +237,19 @@ while [ $# -gt 0 ]; do
         plegap="-ple-gap $2"
         shift 2
         ;;    
+    --maxcpus)
+        maxcpus=$2
+        shift 2
+        ;;
     esac
 done
 
 net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
 
 $spawn $kvm -bios $seabios -enable-kvm  \
--M $machine -smp $cpus,maxcpus=64 \
+-M $machine -smp $cpus,maxcpus=$maxcpus \
 -cpu $model \
+$extracontrollers \
 -m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=raw \
 -device $diskdriver,bus=$diskbus.0,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1 \
 $vga \
