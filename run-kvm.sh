@@ -241,6 +241,27 @@ while [ $# -gt 0 ]; do
         maxcpus=$2
         shift 2
         ;;
+    --vda)
+        args=$args"-device virtio-serial-pci -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 -chardev spicevmc,id=spicechannel0,name=vdagent "
+        shift
+        ;;
+    --usbredirdisk)
+        args=$args"-usbdevice disk:$2 -chardev spicevmc,name=usbredir,id=usbredirchardev1 -device usb-redir,chardev=usbredirchardev1,id=usbredirdev1,debug=3 "
+        shift 2
+        ;;
+    --usbcontrol)
+        args=$args"-readconfig $2 "
+        shift 2
+        ;;
+    --spice)
+        spice="-spice port=5930,disable-ticketing"
+        vga="-vga qxl"
+        shift 1
+        ;;
+    --fbdev)
+        extrargs=$extrargs" ""-fbdev "
+        shift 1
+        ;;
     esac
 done
 
@@ -266,7 +287,8 @@ $qmp \
 $extrargs \
 $numainfo \
 $devices \
-$plegap
+$plegap \
+$spice
 
 #-device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x8
 #-monitor stdio \
