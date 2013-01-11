@@ -26,6 +26,7 @@ plegap=""
 maxcpus=64
 #monitor="-monitor unix:/tmp/qemu.monitor5,server,nowait"
 usbcontrollers=0
+cachemode="none"
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -33,12 +34,20 @@ while [ $# -gt 0 ]; do
         extrargs=$extrargs" -nodefaults -nodefconfig"
         shift 1
         ;;
+    --cachemode)
+        cachemode=$2
+        shift 2
+        ;;
     --dimmid)
         dimmid="id=$2"
         shift 2
         ;;
     --dimmnode)
         dimmnode=",node=$2"
+        shift 2
+        ;;
+    --dimmbus)
+        dimmbus=",bus=$2"
         shift 2
         ;;
     --dimmsize)
@@ -55,8 +64,8 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --dimmpop)
-        dimmpop=",populated=on"
-        shift 1
+        dimmpop=",populated=$2"
+        shift 2
         ;;
     --device)
         devices=$devices" -device $2"
@@ -80,8 +89,8 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --usb-piix3)
-        #extracontrollers=$extracontrollers" -usb"
-        extracontrollers=$extracontrollers" -device piix3-usb-uhci,id=usb$usbcontrollers"
+        extracontrollers=$extracontrollers" -device piix3-usb-uhci,id=usb"
+        #extracontrollers=$extracontrollers" -device piix3-usb-uhci,id=usb$usbcontrollers" #use this for multplit usb host controllers
         #extracontrollers=$extracontrollers" -device piix3-usb-uhci"
         let usbcontrollers++
         shift 1
@@ -109,6 +118,11 @@ while [ $# -gt 0 ]; do
         diskaddr=""
         shift 1
         ;;
+    --usbdriver)
+        diskdriver="usb-storage"
+        diskbus="usb"
+        shift 1
+        ;;
     --diskextra)    
         diskextra="-drive file=$2,if=none,id=extra,format=raw"
         shift 2
@@ -127,6 +141,10 @@ while [ $# -gt 0 ]; do
         ;;
     --imagextra)    
         imagextra="-drive file=$2,if=none,id=isoextra,format=raw" #media=cdrom
+        shift 2
+        ;;
+    --imagecdromextra)    
+        imagextra="-drive file=$2,if=none,id=isoextra,format=raw,media=cdrom"
         shift 2
         ;;
     --imagextradummy)    
@@ -262,6 +280,10 @@ while [ $# -gt 0 ]; do
         extrargs=$extrargs" ""-fbdev "
         shift 1
         ;;
+    --assign)
+        passthrough="-device pci-assign,host=$2"
+        shift 2
+        ;;
     esac
 done
 
@@ -271,7 +293,7 @@ $spawn $kvm -bios $seabios -enable-kvm  \
 -M $machine -smp $cpus,maxcpus=$maxcpus \
 -cpu $model \
 $extracontrollers \
--m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=raw \
+-m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=raw,cache=$cachemode \
 -device $diskdriver,bus=$diskbus.0,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1 \
 $vga \
 $net \
@@ -288,7 +310,8 @@ $extrargs \
 $numainfo \
 $devices \
 $plegap \
-$spice
+$spice \
+$passthrough
 
 #-device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x8
 #-monitor stdio \
