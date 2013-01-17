@@ -260,15 +260,15 @@ while [ $# -gt 0 ]; do
         shift 2
         ;;
     --vda)
-        args=$args"-device virtio-serial-pci -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 -chardev spicevmc,id=spicechannel0,name=vdagent "
+        extrargs=$extrargs"-device virtio-serial-pci -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 -chardev spicevmc,id=spicechannel0,name=vdagent "
         shift
         ;;
     --usbredirdisk)
-        args=$args"-usbdevice disk:$2 -chardev spicevmc,name=usbredir,id=usbredirchardev1 -device usb-redir,chardev=usbredirchardev1,id=usbredirdev1,debug=3 "
+        extrargs=$extrargs"-usbdevice disk:$2 -chardev spicevmc,name=usbredir,id=usbredirchardev1 -device usb-redir,chardev=usbredirchardev1,id=usbredirdev1,debug=3 "
         shift 2
         ;;
     --usbcontrol)
-        args=$args"-readconfig $2 "
+        extrargs=$extrargs"-readconfig $2 "
         shift 2
         ;;
     --spice)
