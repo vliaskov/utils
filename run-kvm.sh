@@ -27,6 +27,7 @@ maxcpus=64
 #monitor="-monitor unix:/tmp/qemu.monitor5,server,nowait"
 usbcontrollers=0
 cachemode="none"
+format="raw"
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -124,7 +125,7 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --diskextra)    
-        diskextra="-drive file=$2,if=none,id=extra,format=raw"
+        diskextra="-drive file=$2,if=none,id=extra,format=$format"
         shift 2
         ;;
     --scsidiskextra)
@@ -140,15 +141,15 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --imagextra)    
-        imagextra="-drive file=$2,if=none,id=isoextra,format=raw" #media=cdrom
+        imagextra="-drive file=$2,if=none,id=isoextra,format=$format" #media=cdrom
         shift 2
         ;;
     --imagecdromextra)    
-        imagextra="-drive file=$2,if=none,id=isoextra,format=raw,media=cdrom"
+        imagextra="-drive file=$2,if=none,id=isoextra,format=$format,media=cdrom"
         shift 2
         ;;
     --imagextradummy)    
-        imagextra="-drive if=none,id=isoextra,format=raw"
+        imagextra="-drive if=none,id=isoextra,format=$format"
         shift 1
         ;;
     --cdromideextra)
@@ -284,19 +285,22 @@ while [ $# -gt 0 ]; do
         passthrough="-device pci-assign,host=$2"
         shift 2
         ;;
+    --format)
+        format=$2
+        shift 2
+        ;;
     esac
 done
 
-net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
+#net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
 
 $spawn $kvm -bios $seabios -enable-kvm  \
 -M $machine -smp $cpus,maxcpus=$maxcpus \
 -cpu $model \
 $extracontrollers \
--m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=raw,cache=$cachemode \
+-m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=$format,cache=$cachemode \
 -device $diskdriver,bus=$diskbus.0,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1 \
 $vga \
-$net \
 $dimms \
 $qga \
 $numarg $extra \
