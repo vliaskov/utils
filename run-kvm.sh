@@ -28,6 +28,8 @@ maxcpus=64
 usbcontrollers=0
 cachemode="none"
 format="raw"
+trace=""
+net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -289,10 +291,14 @@ while [ $# -gt 0 ]; do
         format=$2
         shift 2
         ;;
+    --trace)
+        trace="-trace events=$2"
+        shift 2
+        ;;
     esac
 done
 
-#net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
+
 
 $spawn $kvm -bios $seabios -enable-kvm  \
 -M $machine -smp $cpus,maxcpus=$maxcpus \
@@ -300,6 +306,7 @@ $spawn $kvm -bios $seabios -enable-kvm  \
 $extracontrollers \
 -m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=$format,cache=$cachemode \
 -device $diskdriver,bus=$diskbus.0,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1 \
+$net \
 $vga \
 $dimms \
 $qga \
@@ -315,7 +322,8 @@ $numainfo \
 $devices \
 $plegap \
 $spice \
-$passthrough
+$passthrough \
+$trace
 
 #-device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x8
 #-monitor stdio \
