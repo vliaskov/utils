@@ -107,8 +107,14 @@ while [ $# -gt 0 ]; do
         extrargs=$extrargs" -device usb-tablet,id=input0"
         shift 1
         ;;
+    --pcie)
+        diskbus="pcie"
+        shift 1
+        ;;
     --ahci)
-        extracontrollers=$extracontrollers" -device ahci,id=ahci.0,bus=pci.0"
+        extracontrollers=$extracontrollers" -device ahci,id=ahci,bus=$diskbus.0"
+        diskbus="ahci"
+        diskdriver="ide-hd"
         shift 1
         ;;
     --root)
@@ -126,19 +132,23 @@ while [ $# -gt 0 ]; do
         diskbus="usb"
         shift 1
         ;;
-    --diskextra)    
-        diskextra="-drive file=$2,if=none,id=extra,format=$format"
+    --devicedriveextra)    
+        diskextra="-drive file=$2,if=none,id=extra,format=$format -device $diskdriver,bus=$diskbus.1,drive=extra,id=diskextra"
         shift 2
         ;;
-    --scsidiskextra)
+    --driveextra)    
+        diskextra="-drive file=$2,if=none,id=extra,format=$format -device $diskdriver,bus=$diskbus.1,drive=extra,id=diskextra"
+        shift 2
+        ;;
+    --scsideviceextra)
         diskextra=$diskextra" -device scsi-disk,drive=extra"
         shift 1
         ;;    
-    --idediskextra)
+    --idedeviceextra)
         diskextra=$diskextra" -device ide-disk,drive=extra"
         shift 1
         ;;    
-    --virtiodiskextra)
+    --virtiodeviceextra)
         diskextra=$diskextra" -device virtio-blk-pci,drive=extra"
         shift 1
         ;;
