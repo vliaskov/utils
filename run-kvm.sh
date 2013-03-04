@@ -26,6 +26,10 @@ plegap=""
 maxcpus=64
 #monitor="-monitor unix:/tmp/qemu.monitor5,server,nowait"
 usbcontrollers=0
+cachemode="none"
+format="raw"
+trace=""
+net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -33,12 +37,20 @@ while [ $# -gt 0 ]; do
         extrargs=$extrargs" -nodefaults -nodefconfig"
         shift 1
         ;;
+    --cachemode)
+        cachemode=$2
+        shift 2
+        ;;
     --dimmid)
         dimmid="id=$2"
         shift 2
         ;;
     --dimmnode)
         dimmnode=",node=$2"
+        shift 2
+        ;;
+    --dimmbus)
+        dimmbus=",bus=$2"
         shift 2
         ;;
     --dimmsize)
@@ -55,8 +67,8 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --dimmpop)
-        dimmpop=",populated=on"
-        shift 1
+        dimmpop=",populated=$2"
+        shift 2
         ;;
     --device)
         devices=$devices" -device $2"
@@ -80,8 +92,8 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --usb-piix3)
-        #extracontrollers=$extracontrollers" -usb"
-        extracontrollers=$extracontrollers" -device piix3-usb-uhci,id=usb$usbcontrollers"
+        extracontrollers=$extracontrollers" -device piix3-usb-uhci,id=usb"
+        #extracontrollers=$extracontrollers" -device piix3-usb-uhci,id=usb$usbcontrollers" #use this for multplit usb host controllers
         #extracontrollers=$extracontrollers" -device piix3-usb-uhci"
         let usbcontrollers++
         shift 1
@@ -95,8 +107,14 @@ while [ $# -gt 0 ]; do
         extrargs=$extrargs" -device usb-tablet,id=input0"
         shift 1
         ;;
+    --pcie)
+        diskbus="pcie"
+        shift 1
+        ;;
     --ahci)
-        extracontrollers=$extracontrollers" -device ahci,id=ahci.0,bus=pci.0"
+        extracontrollers=$extracontrollers" -device ahci,id=ahci,bus=$diskbus.0"
+        diskbus="ahci"
+        diskdriver="ide-hd"
         shift 1
         ;;
     --root)
@@ -109,28 +127,41 @@ while [ $# -gt 0 ]; do
         diskaddr=""
         shift 1
         ;;
-    --diskextra)    
-        diskextra="-drive file=$2,if=none,id=extra,format=raw"
+    --usbdriver)
+        diskdriver="usb-storage"
+        diskbus="usb"
+        shift 1
+        ;;
+    --devicedriveextra)    
+        diskextra="-drive file=$2,if=none,id=extra,format=$format -device $diskdriver,bus=$diskbus.1,drive=extra,id=diskextra"
         shift 2
         ;;
-    --scsidiskextra)
+    --driveextra)    
+        diskextra="-drive file=$2,if=none,id=extra,format=$format -device $diskdriver,bus=$diskbus.1,drive=extra,id=diskextra"
+        shift 2
+        ;;
+    --scsideviceextra)
         diskextra=$diskextra" -device scsi-disk,drive=extra"
         shift 1
         ;;    
-    --idediskextra)
+    --idedeviceextra)
         diskextra=$diskextra" -device ide-disk,drive=extra"
         shift 1
         ;;    
-    --virtiodiskextra)
+    --virtiodeviceextra)
         diskextra=$diskextra" -device virtio-blk-pci,drive=extra"
         shift 1
         ;;
     --imagextra)    
-        imagextra="-drive file=$2,if=none,id=isoextra,format=raw" #media=cdrom
+        imagextra="-drive file=$2,if=none,id=isoextra,format=$format" #media=cdrom
+        shift 2
+        ;;
+    --imagecdromextra)    
+        imagextra="-drive file=$2,if=none,id=isoextra,format=$format,media=cdrom"
         shift 2
         ;;
     --imagextradummy)    
-        imagextra="-drive if=none,id=isoextra,format=raw"
+        imagextra="-drive if=none,id=isoextra,format=$format"
         shift 1
         ;;
     --cdromideextra)
@@ -242,15 +273,15 @@ while [ $# -gt 0 ]; do
         shift 2
         ;;
     --vda)
-        args=$args"-device virtio-serial-pci -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 -chardev spicevmc,id=spicechannel0,name=vdagent "
+        extrargs=$extrargs"-device virtio-serial-pci -device virtserialport,chardev=spicechannel0,name=com.redhat.spice.0 -chardev spicevmc,id=spicechannel0,name=vdagent "
         shift
         ;;
     --usbredirdisk)
-        args=$args"-usbdevice disk:$2 -chardev spicevmc,name=usbredir,id=usbredirchardev1 -device usb-redir,chardev=usbredirchardev1,id=usbredirdev1,debug=3 "
+        extrargs=$extrargs"-usbdevice disk:$2 -chardev spicevmc,name=usbredir,id=usbredirchardev1 -device usb-redir,chardev=usbredirchardev1,id=usbredirdev1,debug=3 "
         shift 2
         ;;
     --usbcontrol)
-        args=$args"-readconfig $2 "
+        extrargs=$extrargs"-readconfig $2 "
         shift 2
         ;;
     --spice)
@@ -262,19 +293,31 @@ while [ $# -gt 0 ]; do
         extrargs=$extrargs" ""-fbdev "
         shift 1
         ;;
+    --assign)
+        passthrough="-device pci-assign,host=$2"
+        shift 2
+        ;;
+    --format)
+        format=$2
+        shift 2
+        ;;
+    --trace)
+        trace="-trace events=$2"
+        shift 2
+        ;;
     esac
 done
 
-net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
+
 
 $spawn $kvm -bios $seabios -enable-kvm  \
 -M $machine -smp $cpus,maxcpus=$maxcpus \
 -cpu $model \
 $extracontrollers \
--m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=raw \
+-m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=$format,cache=$cachemode \
 -device $diskdriver,bus=$diskbus.0,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1 \
-$vga \
 $net \
+$vga \
 $dimms \
 $qga \
 $numarg $extra \
@@ -288,7 +331,9 @@ $extrargs \
 $numainfo \
 $devices \
 $plegap \
-$spice
+$spice \
+$passthrough \
+$trace
 
 #-device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x8
 #-monitor stdio \
