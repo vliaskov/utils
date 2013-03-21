@@ -325,3 +325,15 @@ cache=writethrough (wce=0), and then turn host cache to off (i.e. reopen with
 <kwolf> vliaskov: Yes, BDRV_O_CACHE_WB is WCE, basically
 
 
+#slow down fan, it87 module needs to be loaded for this to work
+# find which hwmon corrsponds to it87 varies depending on other sensor modules loaded
+for device in `ls -d /sys/class/hwmon/hwmon*`
+do
+    if [ -e $device/device/name ]; then
+        name=`cat $device/device/name`
+        if [ $name = "it8721" ]; then
+            echo 1 > $device/device/pwm1_enable
+            echo 50 > $device/device/pwm1
+        fi
+    fi
+done
