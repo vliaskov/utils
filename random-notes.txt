@@ -1,0 +1,339 @@
+RHEL/CENTOS stuff:
+    /etc/sysconfig/network-scripts/ifcfg-eth0 : First Ethernet card
+    configuration file
+        /etc/sysconfig/network-scripts/ifcfg-eth1 : Second Ethernet card
+	configuration file
+	does HW_ADDR (mac_adress) need to be defined here?
+
+	service iptables save
+# service iptables stop
+# chkconfig iptables off
+
+	cat /etc/sysconfig/selinux
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#       enforcing - SELinux security policy is enforced.
+#       permissive - SELinux prints warnings instead of enforcing.
+#       disabled - SELinux is fully disabled.
+	SELINUX=permissive
+
+
+	/sbin/dhclient-script writes to /etc/resolv.conf
+
+	gdb make ignore signal (needed e.g. to debug emulators like qemu)
+	handle SIG38 pass noprint  nonstop
+
+
+	vga=794
+
+
+	**kvmclock drift issues**
+	- clocksource kvm
+	- "divider=10" in guest kernel command? porbably not a good idea
+	- is "timedrift=slew" helpful?
+	- install ntp on guest
+
+
+- gdbserver	
+#!/bin/bash
+
+- how to change consolefonts e.g. useful for kernel backtrace to fit screen
+setfont /usr/share/consolefonts/lat1-08.psf.gz
+
+- how to connect to remote target with gdb (over tcp port)
+gdb> target remote localhost:1234
+
+- how to add kernel module symbols
+<gdb> add-symbol-file /opt/extra/vliaskov/devel/linux-guest-devel/drivers/acpi/acpi_memhotplug.o 0xffffffffa0405000 -s .data 0xffffffffa0405b90
+
+" From Marcello Tosatti:
+Another option is to boot the host with profile=kvm, wait for the guest to hang,
+then do:
+readprofile -r ; readprofile -m System-map-of-guest.map"
+
+- git: how to stage commits to tracked files, and a newfile, so that they are in
+the same commit:
+  git add -u (this stages the tracked-files changes)
+  git add new_file
+  git commit
+  git format-patch
+  git am *patch (will cherry-pick each one of the patches onto HEAD)
+
+
+***RPM SPEC***
+%var (accessing a variable called var)
+%define var 22
+
+
+rpm2cpio ../kernel-3.2.6-3.fc16.x86_64.rpm | cpio -idmv
+rpmbuild -bb
+------
+git flow release finish --notag v.e.r.s.
+-----
+./trace-cmd -e kvm:kvm_page_fault
+./trace-cmd -e kvm:kvm_exit
+kvm_exit reasons while runnning STREAm on a 4VCPU VM, ordered from most exits to
+less exists:
+
+SVM_EXIT_PAUSE (much higher 3x when vcpus are not indivdually pinned)
+SVM_EXIT_IDTR_READ (why interrupt descriptor table read?)
+SVM_EXIT_IOIO (supposed to be only reading memory?)
+SVM_EXIT_CPUID (why?)
+SVN_EXIT_HLT 
+
+------ 
+
+update rs_virtual_image set c_cpu_hotplug = true where fk_region like '%north%'
+and c_name like '%hotplug%';
+
+select c.c_index as core , pnd.c_name as pserver, nd.c_name as
+vserver, vs.c_uuid as vserverid from rs_networked_device nd,
+    rs_networked_device pnd, rs_virtual_server vs, rs_cpu_unit u,
+    rs_cpu_core c where vs.c_uuid in ('d0393d97-f45b-24a7-3109-c4697f3c7747')
+    and nd.c_uuid=vs.c_uuid and
+    u.fk_vserver=vs.c_uuid and c.c_uuid=u.fk_cpu_core and
+    c.fk_server=pnd.c_uuid;
+
+------
+debian helper:
+dh clean
+fakeroot debian/rules clean
+pfakeroot debian/rules binary
+
+debian/subpackage.install file to separate binaries into a different package
+dh_install *needs* to be called, otherwise debian/*install files are not inspected
+dh_installdirs may also be needed                                                   
+
+delete anetwork interface:
+sudo ip a del 10.2.0.102 dev ib0
+
+nc -U unix-socket
+socat unix-scoket stdio
+nc -l -u -p 6665 #listen for udp packets on port 6665
+
+watch -n 1 cat /proc/pagetypeinfo
+
+apt-get install lightppd etckeeper rsync vim less screen (setup VM for a mirror repo)
+
+--audio on wheezy troubleshooting
+pulseaudio daemon may have to use alsa module?
+sudo cat /etc/pulse/default.pa, and uncomment:
+   load-module module-alsa-sink
+   load-module module-alsa-source device=hw:1,0
+alsactl init?
+
+route -n
+arp -n #shows ip and MAC address of gateways
+
+#programs to record video
+streamer -n ntsc -b 24 -p 2 -j 90 -t 75:00 -s 480x480 -r 30 -o test.avi -f mjpeg
+-F stereo -c /dev/video0
+
+git branch --contains <commit>
+
+"The 0xAA55 signature is the last two bytes of the first sector of your bootdisk
+(bootsector/Master Boot Record/MBR). If it is 0xAA55, then the BIOS will try
+booting the system. If it's not found (it garbled or 0x0000), you'll get an
+error message from your BIOS that it didn't find a bootable disk (or the system
+tries booting the next disk). This signature is represented (in binary) as
+0b1010101001010101. The alternating bit pattern was thought to be a protection
+against certain failures (drive or controller)."
+
+
+QEMU qom/qdev: class_init is called on first device_init, not on emulator
+startup.
+
+
+git reflog: very useful to find old heads, lost branches etc.
+
+mdadm --create /dev/md0 --level=1 --raid-disks=2 /dev/loop0 /dev/loop1
+
+git show-branch --sha1-name upstream/master
+
+-- How to find _PXM (proximity domain) for a memory range in the linux kernel
+__next_free_mem_range
+    ---> memblock_get_region_node returns a memregion's node.
+        ---> 
+
+You can check the version with "make kernelrelease" before compilation.
+And there is a line:
+echo "+"
+in scripts/setlocalversion. This can be just commented out. ;-)
+
+--some I/O status commands
+multipath -ll
+mdadm --details
+/sys/kernel/scst/
+
+ip a a ipv6address dev eth0: this adds an ipv6 address to an interface
+
+xrandr -q  /* get current resolution x*/
+
+- How to find the i/o mode a file has been opened with:
+
+Find the QEMU process PID on the host:
+
+ps aux | grep qemu
+
+Then find the file descriptor of the image file which the QEMU process
+has open:
+
+ls -l /proc/$PID/fd
+
+Finally look at the file descriptor flags to confirm it is O_DIRECT:
+
+grep ^flags: /proc/$PID/fdinfo/$FD
+
+Note the flags field is in octal and you're looking for:
+#define O_DIRECT        00040000        /* direct disk access hint */
+
+qemu: QOM code understanding
+- constructor chaining: look at qom/object.c: object_init_with_type
+
+
+dpkg -L /*which files does this package contain?*/
+dpkg -l /*like aptitude search*/
+dpkg --search file /*WHICH PACKAGE CONTAINS THIS FILE?*/ (also: apt-file search file)
+
+rightshift after bios post to get into grub2 menu 
+
+
+qemu add storage (one command for both backend/frotnend device)
+pci_add 0:0:5 storage file=/opt/extra/vliaskov/utils/small.img,if=virtio
+
+"cw": change word vim command!!!! very useful, right?
+
+vcb hotplug testing for devices: 
+device_add is dispatched, but no netdev_add 
+Dec 18 16:35:20 dhcp-192-168-178-175 vcb[2929]: libpbkvm:
+77779999-8888-7777-0000-111122220000: Received the following response to the
+initial QMP cmd: {"return": {}}
+Dec 18 16:35:20 dhcp-192-168-178-175 vcb[2929]: libpbkvm:
+77779999-8888-7777-0000-111122220000: Sending Command: "{ "execute":
+"human-monitor-command", "arguments": { "command-line": "device_add virtio-net-pci,n etdev=hostnet8,id=net8,mac=02:00:0a:c9:da:74,bus=pci.0,addr=0x8" } }",
+        timeout_sec: 3
+Dec 18 16:35:20 dhcp-192-168-178-175 vcb[2929]: libpbkvm:
+77779999-8888-7777-0000-111122220000: Receiving QMP response,
+timeout_sec: 3
+Dec 18 16:35:20 dhcp-192-168-178-175 vcb[2929]: libpbkvm: Function
+Trace: _qmp_recv_ignore_events
+Dec 18 16:35:20 dhcp-192-168-178-175 vcb[2929]: libpbkvm:
+77779999-8888-7777-0000-111122220000: Received QMP response:
+"{"return": "Property 'virtio-net-pci.netdev' can't find value
+'hostnet8'\r\n"}" for request
+: "{ "execute": "human-monitor-command", "arguments": {
+"command-line": "device_add
+virtio-net-pci,netdev=hostnet8,id=net8,mac=02:00:0a:c9:da:74,bus=pci.0,addr=0x8"
+} }"
+Dec 18 16:35:20 dhcp-192-168-178-175 vcb[2929]
+
+#define USE_NETDEV_ADD_REMOVE forces netdev_add insteaf of manual tap device.
+defining this, the hotplug works in guest
+
+git checkout --track origin/master
+
+dpkg --force-overwrite ls /var/cache/apt/archives/package.deb (use this after
+        normal apt install fails e.g. due to conflicting overwriting files)
+
+/sys/kernel/slab : useful slab debugging (also kmemleak API useful)
+
+
+cat /etc/pam_ldap.conf
+
+
+endless migration testcase
+guest VM: for in in `seq 1 10000`; do dd if=/dev/zero of=/tmp/test.txt bs=1M
+                count=10K; done
+
+
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1750EB5E96CC8757
+
+
+qemu I/O:
+none -> writethrough works but qemu on deistnation shows:
+kvm: Features 0x300006d4 unsupported. Allowed features: 0x710004d4
+and VM is not really responsive (e.g. clear, ls hangs)
+    so bit 9 
+
+Features 0x100002d4 unsupported. Allowed features: 0x710004d4
+
+qemu-1.2 none->writethrough:
+qemu-1.2 actually breaks because vmstate includes birtio-blk feature bitd.
+(qemu) kvm: Features 0x100002d4 unsupported. Allowed features: 0x710004d4
+qemu: warning: error while loading state for instance 0x0 of device
+'0000:00:03.0/virtio-blk'
+load of migration failed
+
+qemu-master:
+none->writethrough also breaks (same way as 1.2). BUt sometimes there is a single page
+remaning in ram to be transferred, and migration stays there forever (never
+completes)
+writethrough->none has same weird 4k never-end issue. But also works sometimes
+(there is no incompatible feautres/virtio-blk failing load state)
+
+none->writeback works because wceBIT is on by default in guest virtio
+config (is this true?) But also sometimes stuck at weird 4k remaining ram.
+
+writeback->writethrough fails because writethrough turns CONFIG_WCE to on in
+guest virtio blk driver config.
+
+writethrough->none seems to work (because detination side leaves the virtio WCEBIT off?)
+writethrough->none should be safe in general?
+
+
+none->none
+
+block_set_hostcache blockname on/off
+
+
+                                            
+none            writeback   writethrough  default       wt->none
+                02100002    02100002                                                    qemu-uq/master(commit ) +block_set_hostcache patch (commit)
+02140002        02100002    02100002      writeback     02100002->02140002                            qemu-kvm-1.2
+02140002        02100002    02110002                                                    qemu-kvm-1.0.1-3
+
+guest virtio-blk bit VIRTIO_BLK_F_WCE is set on : cache=none or cache=writeback
+guest virtio-blk bit VIRTIO_BLK_F_WCE is not set on : cache=writethrough
+VIRTIO_BLK_F_WCE is new name for VIRTIO_BLK_F_FLUSH bit
+VIRTIO_BLK_F_WCE is enabled only when BDRV_O_CACHE_WB is on.
+WCE means WRITEBACK_CACHE_ENABLED. Now it makes sense
+
+Doing WCE from virtio driver forces a flush of hosts cache?
+
+Flipping cache settings on host with block_set_hostcache is safe or not? The
+virtio driver is not informed of this.
+
+Hellwig: "The only way to change the cache settings is from the guest.  Without that we're
+guaranteed to lose data when going from WCE=0 to WCE=1."
+
+
+kwolf-irc:
+"
+hostcache is difference b/w cache=none/directsync and cache=writeback/writethrough
+WCE is difference b/w cache=writethrough/directsync and cache=none/writeback
+"
+
+kwolf: thanks. Is there any case where both need to be updated? e.g. start a VM with
+cache=writethrough (wce=0), and then turning host cache to off. Does wce need to be
+updated?
+
+
+Is there any case where both need to be updated? e.g. start a VM with
+cache=writethrough (wce=0), and then turn host cache to off (i.e. reopen with
+        BDRV_O_NOCACHE | BDRV_O_CACHE_WB). Does wce need to be updated?
+<kwolf> vliaskov: Yes, BDRV_O_CACHE_WB is WCE, basically
+
+
+#slow down fan, it87 module needs to be loaded for this to work
+# find which hwmon corrsponds to it87 varies depending on other sensor modules loaded
+for device in `ls -d /sys/class/hwmon/hwmon*`
+do
+    if [ -e $device/device/name ]; then
+        name=`cat $device/device/name`
+        if [ $name = "it8721" ]; then
+            echo 1 > $device/device/pwm1_enable
+            echo 50 > $device/device/pwm1
+        fi
+    fi
+done
