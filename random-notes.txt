@@ -337,3 +337,30 @@ do
         fi
     fi
 done
+
+
+
+Testing netconsole on network3, sending output to local desktop
+
+We add the following to network3 's boot kernel command line:
+"netconsole=@SUT-ip/,6666@locadesktop-ip/"
+
+syntax is
+netconsole=[src-port]@[src-ip]/[<dev>],[tgt-port]@<tgt-ip>/[tgt-macaddr]
+(more instructions can be found at Documentation/networking/netconsole.txt)
+
+    local desktop captures output with e.g.
+    nc -l -u -p 6666
+
+    Tests:
+
+dmesg output from beginning of boot till login screen:
+output is logged on the remote desktop, however many lines are
+missing on the remote port. About 70% of lines arrives on remote
+host
+
+stack traces from CPUs are logged normally
+trigger a stack trace dump on network3 with sysrq
+echo l > /proc/sysrq_trigger
+the stack trace is seen on the remote host
+
