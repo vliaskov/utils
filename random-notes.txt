@@ -194,6 +194,8 @@ qemu: QOM code understanding
 dpkg -L /*which files does this package contain?*/
 dpkg -l /*like aptitude search*/
 dpkg --search file /*WHICH PACKAGE CONTAINS THIS FILE?*/ (also: apt-file search file)
+dpkg-buildpackage -Tget-orig-source -d (to get source package for 3.0 quilt
+version building)
 
 rightshift after bios post to get into grub2 menu 
 
