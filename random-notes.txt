@@ -366,3 +366,10 @@ trigger a stack trace dump on network3 with sysrq
 echo l > /proc/sysrq_trigger
 the stack trace is seen on the remote host
 
+gconf-schemas
+gsettings list-schemas
+At runtime, GSettings looks for schemas in the glib-2.0/schemas subdirectories
+of all directories specified in the XDG_DATA_DIRS environment variable. The
+usual location to install schema files is /usr/share/glib-2.0/schemas. 
+
+
