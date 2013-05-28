@@ -194,8 +194,9 @@ qemu: QOM code understanding
 dpkg -L /*which files does this package contain?*/
 dpkg -l /*like aptitude search*/
 dpkg --search file /*WHICH PACKAGE CONTAINS THIS FILE?*/ (also: apt-file search file)
-dpkg-buildpackage -Tget-orig-source -d (to get source package for 3.0 quilt
+dpkg-buildpackage -T get-orig-source -d (to get source package for 3.0 quilt
 version building)
+debuild -I -i -b: to create orig tarball for quilt 3.0 package formats and build it
 
 rightshift after bios post to get into grub2 menu 
 
@@ -371,5 +372,4 @@ gsettings list-schemas
 At runtime, GSettings looks for schemas in the glib-2.0/schemas subdirectories
 of all directories specified in the XDG_DATA_DIRS environment variable. The
 usual location to install schema files is /usr/share/glib-2.0/schemas. 
-
 

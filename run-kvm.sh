@@ -75,8 +75,13 @@ while [ $# -gt 0 ]; do
         shift 2
         ;;
     --e1000)
-        net="-net nic,model=e1000"
+        net="-netdev type=tap,id=guest0,vhost=$vhost -device e1000,netdev=guest0"
+#        net="-net nic,model=e1000"
         shift 1
+        ;;    
+    --mac)
+        net=$net",mac=$2"
+        shift 2
         ;;    
     --lsi)
         extra="-device lsi"
