@@ -373,3 +373,10 @@ At runtime, GSettings looks for schemas in the glib-2.0/schemas subdirectories
 of all directories specified in the XDG_DATA_DIRS environment variable. The
 usual location to install schema files is /usr/share/glib-2.0/schemas. 
 
+gettext: tool tha creates database for translatable strings in files
+xgettext --add-comments=/
+msginit --locale=fr --input=name.pot
+
+$ gdb vmlinux
+(gdb) list *find_match+0xc5
+
