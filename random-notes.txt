@@ -380,3 +380,8 @@ msginit --locale=fr --input=name.pot
 $ gdb vmlinux
 (gdb) list *find_match+0xc5
 
+# ...unpack upstream source...
+$ cp /boot/config-$(uname -r) .config
+$ yes "" | make oldconfig
+$ make deb-pkg -j$(nproc)
+
