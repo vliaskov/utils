@@ -385,3 +385,5 @@ $ cp /boot/config-$(uname -r) .config
 $ yes "" | make oldconfig
 $ make deb-pkg -j$(nproc)
 
+git: how to "blame" deleted line
+git log -S<string> path/to/file
