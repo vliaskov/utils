@@ -394,3 +394,28 @@ pulseaudio needs to be restarted from within jhbuild'shell
 pulseaudio -k (kills pulseaudio user server)
 pulseaudio --start (to start jhbuild's pulseaudio server)
 
+
+$ cat /sys/module/l2cap/sections/.text
+0xe0c77000
+We know where the .text section is loaded so we can now load the symbols from
+l2cap.o using the add-symbol-file gdb command.
+(gdb) add-symbol-file l2cap.o 0xe0c77000 
+add symbol table from file "l2cap.o" at .text_addr = 0xe0c77000 (y or n) y 
+Reading symbols from /home/fotisl/programs/kgdb/l2cap.o...done. (gdb)
+(gdb) add-symbol-file l2cap.o 0xe0c77000
+	add symbol table from file "l2cap.o" at .text_addr = 0xe0c77000
+	Reading symbols from /home/fotisl/programs/kgdb/l2cap.o...done.
+
+If you need to load other sections too, in case they are not contiguous
+with the text in memory, you need to read their addresses. For example
+we’ll load both the .text and the .data sections (you should do .bss too
+but it’s omitted since I wanted to write a quick and dirty guide and it’s already very big!)
+
+Find where both .text and .data are loaded.
+$ cat /sys/module/l2cap/sections/.text 0xe0c77000 
+$ cat /sys/module/l2cap/sections/.data 0xe0c7b438
+$ cat /sys/module/l2cap/sections/.text 0xe0c77000
+$ cat /sys/module/l2cap/sections/.data 0xe0c7b438
+
+Then you load apart from the .text section the .data too.
+(gdb) add-symbol-file l2cap.o 0xe0c77000 -s .data 0xe0c7b438
