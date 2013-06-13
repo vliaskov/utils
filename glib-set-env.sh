@@ -13,6 +13,7 @@
 #  + an empty location where you have R+W access, so that the script
 #    can set up everything for you (recommended).
 # Either set $MYPITIVI in your ~/.bashrc, or edit the line below:
+#depends="yasm flex bison libgnutls-dev automake autoconf autopoint libglib2.0-dev libxml2-dev python-dev"
 MYPITIVI=$HOME/gstreamer #${MYPITIVI:-$HOME/pitivi-git}
 # Change this variable to 'master' if you prefer to work with the master branch
 # When using "master", this script will automatically "pull --rebase" modules.

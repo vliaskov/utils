@@ -387,3 +387,10 @@ $ make deb-pkg -j$(nproc)
 
 git: how to "blame" deleted line
 git log -S<string> path/to/file
+
++jhbuild problem with spidermonkey javascript mozjs: cp /tmp/libmozjs/mozjs185.pc /usr/lib64/pkgconfig/
+jhbuild shell
+pulseaudio needs to be restarted from within jhbuild'shell 
+pulseaudio -k (kills pulseaudio user server)
+pulseaudio --start (to start jhbuild's pulseaudio server)
+
