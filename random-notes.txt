@@ -394,3 +394,4 @@ pulseaudio needs to be restarted from within jhbuild'shell
 pulseaudio -k (kills pulseaudio user server)
 pulseaudio --start (to start jhbuild's pulseaudio server)
 
+Find the rpm which FILE (path/filename) belongs to: rpm -qf FILE
