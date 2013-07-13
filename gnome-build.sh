@@ -14,34 +14,37 @@
 #    can set up everything for you (recommended).
 # Either set $MYPITIVI in your ~/.bashrc, or edit the line below:
 #depends="yasm flex bison libgnutls-dev automake autoconf autopoint libglib2.0-dev libxml2-dev python-dev"
-MYPITIVI=$HOME/gstreamer #${MYPITIVI:-$HOME/pitivi-git}
+MYPITIVI=$2 #${MYPITIVI:-$HOME/pitivi-git}
 # Change this variable to 'master' if you prefer to work with the master branch
 # When using "master", this script will automatically "pull --rebase" modules.
-GST_RELEASE_TAG="1.0.2"
+GST_RELEASE_TAG="master"
 # If you care about building the GStreamer/GES developer API documentation:
 BUILD_DOCS=false
 # Here are some dependencies for building GStreamer and GES. If they're missing,
 # we'll fetch the git repositories at the given version tag and compile.
 # If you set those variables to "master", it will grab the latest dev version
-GLIB_RELEASE_TAG="2.34.0" # "gobject-introspection" needs glib > 2.32
-PYGOBJECT_RELEASE_TAG="3.4.0"
-GOBJECT_INTROSPECTION_RELEASE_TAG="GOBJECT_INTROSPECTION_1_34_0"
+GLIB_RELEASE_TAG="2.36.0" # "gobject-introspection" needs glib > 2.32
+PYGOBJECT_RELEASE_TAG="3.8.0"
+GOBJECT_INTROSPECTION_RELEASE_TAG="GOBJECT_INTROSPECTION_1_36_0"
 #
 # Everything below this line shouldn't be edited!
 #
 
 # Avoid building glib if we can, because it is annoying to use the "memory"
 # backend for gsettings (which happens when we compile glib for some reason)
-if pkg-config glib-2.0 --atleast-version=2.34; then
+if pkg-config glib-2.0 --atleast-version=2.35; then
     MODULES_CORE="gobject-introspection pygobject"
 else
     MODULES_CORE="glib gobject-introspection pygobject"
 fi
 MODULES_CORE=""
 # Do NOT use the following two variables directly, use $MODULES instead
-#MODULES_ALL="gstreamer gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugins-bad gst-ffmpeg gnonlin gst-editing-services gst-python"
-MODULES_ALL="gst-ffmpeg gnonlin gst-editing-services gst-python"
-MODULES_MINIMAL="gnonlin gst-editing-services gst-python"
+# MODULES_ALL="gst-python"
+MODULES_ALL="gstreamer gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugins-bad gst-ffmpeg gnonlin gst-editing-services gst-python gstreamer1.0-utils libclutter-gst-2.0-0"
+#MODULES_ALL="libclutter-gst-2.0-0"
+#MODULES_MINIMAL="gnonlin gst-editing-services gst-python"
+#MODULES_MINIMAL="libclutter-gst-2.0-0"
+MODULES_MINIMAL="gstreamer gst-plugins-base gst-plugins-good gst-plugins-ugly gst-plugins-bad gst-ffmpeg gnonlin gst-editing-services gst-python"
 # The following decision has to be made before we've set any env variables,
 # otherwise the script will detect our "gst uninstalled" and think it's the
 # system-wide install.
@@ -55,7 +58,8 @@ fi
 PITIVI=$MYPITIVI
 
 # base path under which dirs are installed
-PITIVI_PREFIX=$PITIVI/prefix
+PITIVI_PREFIX=$3
+#echo "PREFIX:"$PITIVI_PREFIX 
 
 # set up a bunch of paths
 export PATH="\
@@ -67,7 +71,7 @@ $PITIVI_PREFIX/bin:\
 $PATH"
 
 # /some/path: makes the dynamic linker look in . too, so avoid this
-LD_LIBRARY_PATH=$PITIVI_PREFIX/lib:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=$PITIVI_PREFIX/lib:$PITIVI_PREFIX/lib64:${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 DYLD_LIBRARY_PATH=$PITIVI_PREFIX/lib:${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}
 GI_TYPELIB_PATH=$PITIVI_PREFIX/share/gir-1.0:${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}
 export PKG_CONFIG_PATH="$PITIVI_PREFIX/lib/pkgconfig:$PITIVI/pygobject:$PKG_CONFIG_PATH"
@@ -165,8 +169,8 @@ fi
 export LD_LIBRARY_PATH=$PITIVI/gst-editing-services/ges/.libs:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$PITIVI/gst-editing-services/ges/.libs:$DYLD_LIBRARY_PATH
 export PATH=$PITIVI/gst-editing-services/tools:$PATH
-GI_TYPELIB_PATH=$PITIVI/gst-editing-services/ges:$GI_TYPELIB_PATH
-GI_TYPELIB_PATH=$PITIVI_PREFIX/share/gir-1.0${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}:/usr/lib64/girepository-1.0:/usr/lib/girepository-1.0
+GI_TYPELIB_PATH=$PITIVI/.:$PITIVI/gst-editing-services/ges:$GI_TYPELIB_PATH
+GI_TYPELIB_PATH=$PITIVI_PREFIX/share/gir-1.0:/usr/lib64/girepository-1.0:/usr/lib/girepository-1.0
 
 # And GNonLin
 export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:$PITIVI/gnonlin/gnl/.libs
@@ -260,7 +264,7 @@ if [ "$ready_to_run" != "1" ]; then
 
 
         # Now compile that module
-        ./autogen.sh --prefix=$PITIVI/prefix --disable-gtk-doc
+        ./autogen.sh --prefix=$PITIVI_PREFIX --disable-gtk-doc
         if [ $? -ne 0 ]; then
             echo "Could not run autogen for $m ; result: $?"
             exit 1
@@ -271,14 +275,14 @@ if [ "$ready_to_run" != "1" ]; then
             echo "Could not run make for $m ; result: $?"
             exit 1
         fi
-
-        if [ "$m" != "pygobject" ]; then
-            make install
-            if [ $? -ne 0 ]; then
-                echo "Could not install $m ; result: $?"
-                exit 1
-            fi
-        fi
+	make install
+        #if [ "$m" != "pygobject" ]; then
+        #    make install
+        #    if [ $? -ne 0 ]; then
+        #        echo "Could not install $m ; result: $?"
+        #        exit 1
+        #    fi
+        #fi
 
         cd ..
     done
@@ -326,9 +330,9 @@ if [ "$ready_to_run" != "1" ]; then
         fi
 
         if $BUILD_DOCS; then
-            ./autogen.sh
+            ./autogen.sh --prefix=$PITIVI_PREFIX
         else
-            ./autogen.sh --disable-gtk-doc
+            ./autogen.sh --prefix=$PITIVI_PREFIX --disable-gtk-doc
         fi
         if [ $? -ne 0 ]; then
             echo "Could not run autogen for $m ; result: $?"
@@ -340,6 +344,7 @@ if [ "$ready_to_run" != "1" ]; then
             echo "Could not compile $m ; result: $?"
             exit 1
         fi
+        make install
         cd ..
     done
 
@@ -348,7 +353,7 @@ if [ "$ready_to_run" != "1" ]; then
         git clone git://git.gnome.org/pitivi
     fi
     cd pitivi
-    ./autogen.sh
+    ./autogen.sh --prefix=$PITIVI_PREFIX
     if [ $? -ne 0 ]; then
         echo "Could not run autogen for Pitivi ; result: $?"
         exit 1
@@ -386,3 +391,5 @@ if [ $ready_to_run == 1 ]; then
     fi
     bash --rcfile <(cat ~/.bashrc; echo $changed_PS1)
 fi
+#./configure --prefix=/opt/build/ --enable-gtk-doc         --enable-gdk-pixbuf         --enable-cogl-pango         --enable-introspection=yes --with-gles2-libname=libGLESv2.so.2 --enable-cogl-gst=yes
+#./configure --prefix=/opt/build/ --enable-gtk-doc         --enable-gdk-pixbuf         --enable-cogl-pango         --enable-introspection=yes --with-gles2-libname=libGLESv2.so.2 --enable-cogl-gst=yes

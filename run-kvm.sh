@@ -29,7 +29,8 @@ usbcontrollers=0
 cachemode="none"
 format="raw"
 trace=""
-net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0 "
+dataplane=""
+net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0"
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -74,9 +75,18 @@ while [ $# -gt 0 ]; do
         devices=$devices" -device $2"
         shift 2
         ;;
-    --e1000)
-        net="-net nic,model=e1000"
+    --dataplane)
+        dataplane=",x-data-plane=on,config-wce=off,scsi=off"
         shift 1
+        ;;
+    --e1000)
+        net="-netdev type=tap,id=guest0,vhost=$vhost -device e1000,netdev=guest0"
+#        net="-net nic,model=e1000"
+        shift 1
+        ;;    
+    --mac)
+        net=$net",mac=$2"
+        shift 2
         ;;    
     --lsi)
         extra="-device lsi"
@@ -165,7 +175,7 @@ while [ $# -gt 0 ]; do
         shift 1
         ;;
     --cdromideextra)
-        imagextra=$imagextra" -device ide-drive,drive=isoextra,id=ide1-cd1"
+        imagextra=$imagextra" -device ide-drive,drive=isoextra,id=ide1-cd1,bootindex=1"
         shift 1
         ;;
     --cdromideextraempty)
@@ -289,6 +299,11 @@ while [ $# -gt 0 ]; do
         vga="-vga qxl"
         shift 1
         ;;
+    --spicem)
+        spice="-spice port=5930,disable-ticketing"
+        vga="-vga qxl -device qxl"
+        shift 1
+        ;;
     --fbdev)
         extrargs=$extrargs" ""-fbdev "
         shift 1
@@ -314,8 +329,9 @@ $spawn $kvm -bios $seabios -enable-kvm  \
 -M $machine -smp $cpus,maxcpus=$maxcpus \
 -cpu $model \
 $extracontrollers \
--m $mem -drive file=$rootimage,if=none,id=drive-virtio-disk0,format=$format,cache=$cachemode \
--device $diskdriver,bus=$diskbus.0,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=1 \
+-m $mem -drive \
+file=$rootimage,if=none,id=drive-virtio-disk0,format=$format,cache=$cachemode,aio=native \
+-device $diskdriver,bus=$diskbus.0,drive=drive-virtio-disk0,id=virtio-disk0,bootindex=2$dataplane \
 $net \
 $vga \
 $dimms \
