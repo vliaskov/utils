@@ -299,6 +299,11 @@ while [ $# -gt 0 ]; do
         vga="-vga qxl"
         shift 1
         ;;
+    --spicem)
+        spice="-spice port=5930,disable-ticketing"
+        vga="-vga qxl -device qxl"
+        shift 1
+        ;;
     --fbdev)
         extrargs=$extrargs" ""-fbdev "
         shift 1
