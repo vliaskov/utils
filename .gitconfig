@@ -1,0 +1,25 @@
+[user]
+	name = Vasilis Liaskovitis
+	email = vliaskov@gmail.com
+[sendemail]
+    smtpserver = "smtp.gmail.com"
+    smtpserverport = "587"
+    smtpencryption = "tls"
+    smtpuser = "vliaskov@gmail.com"
+    chainreplyto = "false"
+
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    hist = log --graph --date=short
+#    hist = log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short
+
+[branch "master"]
+    mergeoptions = --no-ff
+
+[branch "develop"]
+    mergeoptions = --no-ff
+
+[receive]
+    denyDeleteCurrent = ignore
