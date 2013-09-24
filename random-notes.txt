@@ -429,3 +429,5 @@ sudo yum install gstreamer1-plugins-bad-freeworld gstreamer1-plugins-good-extras
 DEBUG pitivi (python):
 gdb --args python ./bin/pitivi
 
+always use "git pull --rebase origin branch" to do a git-rebase instead of
+git-merge during pull
