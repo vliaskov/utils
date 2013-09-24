@@ -19,6 +19,7 @@ model="host"
 extrargs=""
 extracontrollers=""
 machine="pc"
+#machine="pc-1.0"
 spawn=""
 numainfo=""
 devices=""
@@ -319,6 +320,10 @@ while [ $# -gt 0 ]; do
     --trace)
         trace="-trace events=$2"
         shift 2
+        ;;
+    --irqchip)
+        machine=$machine" -machine kernel_irqchip=off"
+        shift 1
         ;;
     esac
 done
