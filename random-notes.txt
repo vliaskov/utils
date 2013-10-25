@@ -435,3 +435,8 @@ git-merge during pull
 WHenusing "git flow" for a release, and we don't want a tag to be generated from
 git-flow, use --notag option:
 git flow release finish --notag v.e.r.s.
+
+how to use smtp in .muttrc (sendmail needs to be installed probably)
+set smtp_url = "smtp://username@smtp.gmail.com"
+set smtp_pass =
+
