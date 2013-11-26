@@ -440,3 +440,20 @@ how to use smtp in .muttrc (sendmail needs to be installed probably)
 set smtp_url = "smtp://username@smtp.gmail.com"
 set smtp_pass =
 
+There can be a problem pushing to git if a repo was cloned without ssh syntax
+e.g.
+"Authentication failed" after trying "git push origin branchname"
+ssh -v git@github.com
+"Hi vliaskov! You've successfully authenticated, but GitHub does not provide
+shell access." (actually this doesn't look like a problem)
+
+git remote -v
+origin	https://www.github.com/vliaskov/ratninjathieves/ (fetch)
+origin	https://www.github.com/vliaskov/ratninjathieves/ (push)
+THe problem is that the repo was cloned without ssh syntax, try renaming remote
+urli with this command:
+git remote set-url origin ssh://git@github.com/vliaskov/ratninjathieves
+and push should hopefully work now.
+
+how to turn of screen saver in gnome:
+gsettings set org.gnome.desktop.session idle-delay 0
