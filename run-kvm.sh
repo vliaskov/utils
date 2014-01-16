@@ -39,6 +39,10 @@ while [ $# -gt 0 ]; do
         extrargs=$extrargs" -nodefaults -nodefconfig"
         shift 1
         ;;
+    --nonet)
+	net=""
+        shift 1
+        ;;
     --cachemode)
         cachemode=$2
         shift 2
