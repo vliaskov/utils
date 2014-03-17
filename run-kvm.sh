@@ -32,9 +32,14 @@ format="raw"
 trace=""
 dataplane=""
 net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0"
+slots=""
 
 while [ $# -gt 0 ]; do
     case $1 in
+    --nonet)
+        net=""
+        shift 1
+        ;;
     --nodefaults)
         extrargs=$extrargs" -nodefaults -nodefconfig"
         shift 1
@@ -329,12 +334,21 @@ while [ $# -gt 0 ]; do
         machine=$machine" -machine kernel_irqchip=off"
         shift 1
         ;;
+    --slots)
+        mem=$mem",slots=$2"
+        shift 2
+        ;;
+    --maxmem)
+        mem=$mem",maxmem=$2"
+        shift 2
+        ;;
     esac
 done
 
 
 
-$spawn $kvm -bios $seabios -enable-kvm  \
+#$spawn $kvm -L $seabios -enable-kvm  \
+$spawn $kvm -enable-kvm  \
 -M $machine -smp $cpus,maxcpus=$maxcpus \
 -cpu $model \
 $extracontrollers \

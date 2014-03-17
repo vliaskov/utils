@@ -475,3 +475,10 @@ group can issue any command with sudo, but are prompted with a password ;
 members of the nopwd group are not prompted with a password.
 
 
+if host has dns problems, sshing into client VMs on host may have problems or
+take too long to connect. In guest:
+vim /etc/ssh/sshd_config
+Add this line:
+	UseDNS no
+/etc/init.d/ssh restart
+UseDNS No
