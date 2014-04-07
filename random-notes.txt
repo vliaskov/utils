@@ -482,3 +482,6 @@ Add this line:
 	UseDNS no
 /etc/init.d/ssh restart
 UseDNS No
+
+To check version package in yum:
+yum list installed | grep seabios
