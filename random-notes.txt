@@ -484,4 +484,8 @@ Add this line:
 UseDNS No
 
 To check version package in yum:
-yum list installed | grep seabios
+yum list installed | grep seabio
+
+to find Public ip:
+curl ifconfig.me
+curl -s checkip.dyndns.org|sed -e 's/.*Current IP Address: //' -e 's/<.*$//'
