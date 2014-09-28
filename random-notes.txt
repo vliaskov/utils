@@ -489,3 +489,5 @@ yum list installed | grep seabio
 to find Public ip:
 curl ifconfig.me
 curl -s checkip.dyndns.org|sed -e 's/.*Current IP Address: //' -e 's/<.*$//'
+ some plugin is doing something wrong. You can see which one is and where it
+happens with G_DEBUG=fatal_criticals gdb --args gst-inspect-1.0
