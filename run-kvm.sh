@@ -5,6 +5,7 @@ diskdriver="virtio-blk-pci"
 diskbus="pci"
 diskaddr="addr=0x5"
 seabios="/usr/share/seabios/bios.bin"
+#kvm="/opt/build/qemu/bin/qemu-system-ppc64"
 kvm="kvm"
 cpus=2
 incoming=""
@@ -20,6 +21,7 @@ extrargs=""
 extracontrollers=""
 machine="pc"
 #machine="pc-1.0"
+#machine="pseries"
 spawn=""
 numainfo=""
 devices=""
@@ -33,12 +35,27 @@ trace=""
 dataplane=""
 net="-netdev type=tap,id=guest0,vhost=$vhost -device virtio-net-pci,netdev=guest0"
 slots=""
+boot=""
+enablekvm="-enable-kvm"
+#enablekvm=""
 
 while [ $# -gt 0 ]; do
     case $1 in
+    --display)
+        extrargs="-display $2"
+        shift 2
+        ;;
+    --disablekvm)
+        enablekvm=" "
+        shift 1
+        ;;
     --nonet)
         net=""
         shift 1
+        ;;
+    --boot)
+        boot="-boot $2"
+        shift 2
         ;;
     --nodefaults)
         extrargs=$extrargs" -nodefaults -nodefconfig"
@@ -171,6 +188,10 @@ while [ $# -gt 0 ]; do
     --virtiodeviceextra)
         diskextra=$diskextra" -device virtio-blk-pci,drive=extra"
         shift 1
+        ;;
+    --cdrom)    
+        imagextra="-cdrom $2"
+        shift 2
         ;;
     --imagextra)    
         imagextra="-drive file=$2,if=none,id=isoextra,format=$format" #media=cdrom
@@ -342,13 +363,17 @@ while [ $# -gt 0 ]; do
         mem=$mem",maxmem=$2"
         shift 2
         ;;
+    --readconfig)
+        extrargs=$extrargs"-readconfig $2 "
+        shift 2
+        ;;
     esac
 done
 
 
 
 #$spawn $kvm -L $seabios -enable-kvm  \
-$spawn $kvm -enable-kvm  \
+$spawn $kvm $enablekvm \
 -M $machine -smp $cpus,maxcpus=$maxcpus \
 -cpu $model \
 $extracontrollers \
@@ -372,6 +397,7 @@ $devices \
 $plegap \
 $spice \
 $passthrough \
+$boot \
 $trace
 
 #-device virtio-balloon-pci,id=balloon0,bus=pci.0,addr=0x8

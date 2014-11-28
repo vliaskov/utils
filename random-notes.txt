@@ -198,6 +198,11 @@ dpkg-buildpackage -T get-orig-source -d (to get source package for 3.0 quilt
 version building)
 debuild -I -i -b: to create orig tarball for quilt 3.0 package formats and build it
 
+yum whatprovides /path/to/file
+yum search
+yum install
+
+
 rightshift after bios post to get into grub2 menu 
 
 
@@ -491,3 +496,17 @@ curl ifconfig.me
 curl -s checkip.dyndns.org|sed -e 's/.*Current IP Address: //' -e 's/<.*$//'
  some plugin is doing something wrong. You can see which one is and where it
 happens with G_DEBUG=fatal_criticals gdb --args gst-inspect-1.0
+
+to get VT-d (VFIO, iommu) working set this at kernel command line:
+set the intel_iommu=on and vfio_iommu_type1.allow_unsafe_interrupts=1 in grub
+For qtest debugging: export QTEST_QEMU_BINARY=x86_64-softmmu/qemu-system-x86_64: gdb tests/yourtest 
+
+
+VIRGL: 
+Addendum to https://docs.google.com/document/d/1CNiN0rHdfh7cp9tQ3coebNEJtHJzm4OCWvF3qL4nucc/pub
+In guest, msa compiles virtio_gpu_dri.so. This needs to be renamed into virgl_dri.so
+symbolic link:
+ln -s /usr/lib64/dri/virtiopgu_dri.so /usr/lib64/virgl_dri.so
+for Xorg, dri to work
+
+
