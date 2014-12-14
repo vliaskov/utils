@@ -509,4 +509,22 @@ symbolic link:
 ln -s /usr/lib64/dri/virtiopgu_dri.so /usr/lib64/virgl_dri.so
 for Xorg, dri to work
 
+kernel option "drm.rnodes=1" is needed to enable DRI render node
+/dev/dri/renderD. otherwise DRI render nodes are not possible. Only usable with
+>=3.12 kernel
 
+eglbufpass:
+To run git://people.freedesktop.org/~airlied/eglbufpass you need:
+- drm.rnodes=1 (See above)
+- mesa build from git://people.freedesktop.org/~airlied/mesa:dma_buf_export branch
+
+
+QT 5: How to use QGLContext from a render-thread? i.e. non-GUI thread (the gui
+thread is e.g. the default running thread of a QGLWidget)
+
+VNC tunneling through ssh: E.g. use ssh port 3333 to forward VNC server from
+remote host:5900 to localhost:5902
+ssh -L 5902:localhost:5900 -N  -f  name@remote.host.address.ip -p 3333  
+and than vncviewer localhost:5902 should connect to remote vncserver host:5900
+GST_DEBUG=3 gst-launch-1.0 filesrc location=/opt/Videos/test.avi ! decodebin name=decoder ! queue ! videoscale ! videoconvert   ! interlace field-pattern=1 ! decklinksink mode=2
+GST_DEBUG=3 gst-launch-1.0 filesrc location=/opt/Videos/FatherTed.avi ! decodebin name=decoder  decoder. ! videoscale ! videoconvert   ! interlace field-pattern=1 ! decklinksink mode=2 name=deck decoder. ! tee ! audioconvert  ! audioresample ! level ! deck.
