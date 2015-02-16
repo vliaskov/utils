@@ -528,3 +528,6 @@ ssh -L 5902:localhost:5900 -N  -f  name@remote.host.address.ip -p 3333
 and than vncviewer localhost:5902 should connect to remote vncserver host:5900
 GST_DEBUG=3 gst-launch-1.0 filesrc location=/opt/Videos/test.avi ! decodebin name=decoder ! queue ! videoscale ! videoconvert   ! interlace field-pattern=1 ! decklinksink mode=2
 GST_DEBUG=3 gst-launch-1.0 filesrc location=/opt/Videos/FatherTed.avi ! decodebin name=decoder  decoder. ! videoscale ! videoconvert   ! interlace field-pattern=1 ! decklinksink mode=2 name=deck decoder. ! tee ! audioconvert  ! audioresample ! level ! deck.
+
+
+avconv -i : see streams in multimedia file
