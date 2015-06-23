@@ -531,3 +531,38 @@ GST_DEBUG=3 gst-launch-1.0 filesrc location=/opt/Videos/FatherTed.avi ! decodebi
 
 
 avconv -i : see streams in multimedia file
+
+rebuild gstreamer repos from master with jhbuild
+for i in "gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly"; do cd $i; git reset --hard HEAD; git co master; git pull --rebase origin master; echo " " >> README; jhbuild buildone $i; cd ..; done
+
+I have found out that glimagesink was choosed.. you can use debug filter GST_ELEMENT_FACTORY:4 for this
+cp /usr/bin/pkg-config /home/vliaskov/cerbero/build-tools/bin/
+cerbero buildone gstreamer-1.0
+cerbero build gstreamer-1.0
+cerbero buildone libffi
+env WINEPREFIX=/home/vliaskov/.wine wine C:\windows\command\start.exe /Unix /home/vliaskov/.wine/dosdevices/c:/users/Public/Desktop/ElsterFormular.lnk
+export PATH=/opt/devel/winetricks/src/:/opt/devel/winetricks/src/:/opt/utils/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/opt/devel/rpi/tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/
+git clean -x -d -f
+
+cd gstreamer; git reset --hard a988871074c3467aaf0a5f714b55b8 ; echo " " >> README; jhbuild buildone gstreamer;
+cd ..
+cd gst-plugins-base; git reset --hard 4643d34a7a97c2601ec7fc8167251a ; echo " " >> README; jhbuild buildone gstreamer;
+cd ..
+cd gst-plugins-good; git reset --hard 8cd40e77b70dae2a7b76f41c47a753 ; echo " " >> README; jhbuild buildone gstreamer;
+cd ..
+cd gst-plugins-bad; git reset --hard 4521524de37f50812acb33a147fe61 ; echo " " >> README; jhbuild buildone gstreamer;
+cd ..
+cd gst-plugins-ugly; git reset --hard 7dc03df3ded9ce1edbb81d72fea0ce ; echo " " >> README; jhbuild buildone gstreamer;
+cd ..
+#cd gst-; git reset --hard a988871074c3467aaf0a5f714b55b8 ; echo " " >> README; jhbuild buildone gstreamer;
+#cd ..
+GST_GL_PLATFORM=glx/egl GST_GL_API=opengl GST_GL_WINDOW=x11
+GST_REGISTRY
+gst-inspect-1.0 /opt/build/gnome-3.14/lib/gstreamer-1.0/libgstlibav.so
+
+GST_DEBUG_DUMP_DOT_DIR
+
+sudo apt-get install linux-libc-dev:i386
+sudo apt-get install libc-dev-i386
+
+sudo apt-get remove fglrx fglrx-updates xvba-va-driver fglrx-amdcccle
