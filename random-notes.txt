@@ -566,3 +566,6 @@ sudo apt-get install linux-libc-dev:i386
 sudo apt-get install libc-dev-i386
 
 sudo apt-get remove fglrx fglrx-updates xvba-va-driver fglrx-amdcccle
+sudo apt-add-repository  ppa:oibaf/graphics-drivers 
+sudo apt-get build-dep xbmc
+sudo ppa-purge ppa:oibaf/graphics-drivers
