@@ -586,3 +586,9 @@ Remove -Wdeprecated-decls from gstreamer build flags, causes errors on RPI -
 videocore includes
 
 $HOME/.dmrc is used for default desktop session, change as desired
+
+# Edit config file to start session with LXDE:
+nano ~/.vnc/xstartup
+# Add this at the bottom of the file:
+lxterminal &
+/usr/bin/lxsession -s LXDE &
