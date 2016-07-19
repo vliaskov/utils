@@ -582,3 +582,7 @@ doing:
 
 echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
 
+Remove -Wdeprecated-decls from gstreamer build flags, causes errors on RPI -
+videocore includes
+
+$HOME/.dmrc is used for default desktop session, change as desired
