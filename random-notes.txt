@@ -618,6 +618,11 @@ No it works!!! Taken from: https://bugzilla.gnome.org/show_bug.cgi?id=759131
 STREAM 264 video over rtp/TCP
 GST_DEBUG=3 gst-launch-1.0 videotestsrc  ! x264enc tune="zerolatency" threads=1 ! rtph264pay config-interval=1 ! gdppay ! tcpserversink port=8555 host=192.168.1.11
 GST_DEBUG=3 gst-launch-1.0 tcpclientsrc port=8555 host=192.168.1.11 ! gdpdepay !  application/x-rtp, payload=96 ! rtpjitterbuffer ! rtph264depay ! avdec_h264 !  autovideosink
-STREAM FROM RPICAM:
-GST_DEBUG=3 gst-launch-1.0 rpicamsrc  ! 'video/x-h264, width=1280, height=720, framerate=30/1' ! rtph264pay config-interval=1 ! gdppay ! tcpserversink port=8555 host=192.168.1.11
-GST_DEBUG=4 gst-launch-1.0 tcpclientsrc port=8555 host=192.168.1.11 ! gdpdepay ! application/x-rtp, payload=96  ! rtph264depay ! avdec_h264 ! autovideosink
+
+STREAM FROM RPICAM over TCP (2 sec latency):
+Server: GST_DEBUG=3 gst-launch-1.0 rpicamsrc  ! 'video/x-h264, width=1280, height=720, framerate=30/1' ! rtph264pay config-interval=1 ! gdppay ! tcpserversink port=8555 host=192.168.1.11
+Client: GST_DEBUG=4 gst-launch-1.0 tcpclientsrc port=8555 host=192.168.1.11 ! gdpdepay ! application/x-rtp, payload=96  ! rtph264depay ! avdec_h264 ! autovideosink
+
+STREAM FROM RPICAMi over TCP (very low latency):
+Server: GST_DEBUG=3 gst-launch-1.0 rpicamsrc  ! 'video/x-h264, width=1280, height=720, framerate=30/1' ! rtph264pay config-interval=1  ! udpsink port=8558 host=192.168.1.8
+Client: GST_DEBUG=3 gst-launch-1.0 udpsrc port=8558  ! application/x-rtp, payload=96  ! rtph264depay  ! avdec_h264 ! autovideosink 
