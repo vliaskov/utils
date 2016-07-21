@@ -592,3 +592,24 @@ nano ~/.vnc/xstartup
 # Add this at the bottom of the file:
 lxterminal &
 /usr/bin/lxsession -s LXDE &
+
+
+$ vim configure.ac
+$ libtoolize --force
+$ aclocal
+$ autoheader
+$ automake --force-missing --add-missing
+$ autoconf
+
+
+configure gst-plugins-bad for RPI:
+./configure  --prefix /home/pi/ext --libdir /home/pi/ext/lib64
+CFLAGS="-I/opt/vc/include -I /opt/vc/include/interface/vcos/pthreads -I
+/opt/vc/include/interface/vmcs_host/linux/" LDFLAGS="-L/opt/vc/lib"
+--disable-gtk-doc --disable-opengl --enable-gles2 --enable-egl --disable-glx
+--disable-x11 --disable-wayland --enable-dispmanx
+--with-gles2-module-name=/opt/vc/lib/libGLESv2.so
+--with-egl-module-name=/opt/vc/lib/libEGL.so --disable-kms
+
+NOte: kms may be needed so --disable-kms may be bad?
+No it works!!! Taken from: https://bugzilla.gnome.org/show_bug.cgi?id=759131
