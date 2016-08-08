@@ -626,3 +626,7 @@ Client: GST_DEBUG=4 gst-launch-1.0 tcpclientsrc port=8555 host=192.168.1.11 ! gd
 STREAM FROM RPICAMi over TCP (very low latency):
 Server: GST_DEBUG=3 gst-launch-1.0 rpicamsrc  ! 'video/x-h264, width=1280, height=720, framerate=30/1' ! rtph264pay config-interval=1  ! udpsink port=8558 host=192.168.1.8
 Client: GST_DEBUG=3 gst-launch-1.0 udpsrc port=8558  ! application/x-rtp, payload=96  ! rtph264depay  ! avdec_h264 ! autovideosink 
+
+OPENCV build variables to build modules and examples (remember to copy module
+samples e.g. opencv_contrib/samples/sfm to main opencv/samples/ directory):
+cmake -D BUILD_EXAMPLES=ON  -D OPENCV_EXTRA_MODULES_PATH=/home/vliaskov/devel/opencv_contrib/modules .; 
